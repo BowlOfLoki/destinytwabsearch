@@ -1,8 +1,21 @@
-<script src="script.js"></script>
-<div onload="onLoadEvent()">
-    <form method="POST">
-        <input name="search">
-        <input type="submit">
+<script src="script.js" ></script>
+<style>
+    .searchForm {
+        visibility: hidden;
+    }
+</style>
+<script>
+    onLoadEvent()
+</script>
+<div id="main">
+    <p class="loader"> loading </p>
+    <form method="POST" id="searchform" visiblity="invisible" class="searchForm">
+        <input name="search" id="searchTerm"\>
+        <button> Search </button>
     </form>
-    <button onclick="testFunc()">hi</button>
+</div>
+<div id="searched">
+    <div id="placeholder">
+
+    </div>
 </div>
