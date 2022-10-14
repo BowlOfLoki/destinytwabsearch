@@ -30,59 +30,64 @@ async function formSubmit(event) {
 	event.preventDefault();
 	let searchTerm = document.getElementById("searchTerm").value;
 	await searchFunction(twabIds, searchTerm).then(function (response) {
-		totalApps = 0;
-		uniqueApps = 0;
-		most = ["", 0];
-		first = ["", 99999999999];
-		recent = ["", 0];
-		numberTwabs = Object.keys(twabIds).length;
+		if (Object.keys(response).length > 0){
+			totalApps = 0;
+			uniqueApps = 0;
+			most = ["", 0];
+			first = ["", 99999999999];
+			recent = ["", 0];
+			numberTwabs = Object.keys(twabIds).length;
 
 
-		let items = Object.keys(response).map(function (key) {
-			return [key, response[key][2]]
-		})
-		items.sort(function(first, second) {
-			return second[1] - first[1];
-		})
-		for (let x in items) {
-			uniqueApps += 1;
-			let id = items[x][0];
-			let twabName = twabIds[id][0];
+			let items = Object.keys(response).map(function (key) {
+				return [key, response[key][2]]
+			})
+			items.sort(function(first, second) {
+				return second[1] - first[1];
+			})
+			for (let x in items) {
+				uniqueApps += 1;
+				let id = items[x][0];
+				let twabName = twabIds[id][0];
 
-			if (response[id][0] > most[1]) {
-				most[0] = id;
-				most[1] = response[id][0];
+				if (response[id][0] > most[1]) {
+					most[0] = id;
+					most[1] = response[id][0];
+				}
+
+				console.log(items[x][1])
+				if (items[x][1] < first[1]) {
+					first[0] = id;
+					first[1] = items[x][1];
+				}
+
+				if (items[x][1] > recent[1]) {
+					recent[0] = id;
+					recent[1] = items[x][1];
+				}
+
+				htmlText += "<h1><strong>{amount} in <a href=\"https://www.bungie.net/en/Explore/Detail/News/{twabId}\"> {twabName}</a></strong></h1>".replace("{twabName}",twabName).replace("{twabId}",id).replace("{amount}", response[id][0]);
+				for (let sent in response[id][1]) {
+					totalApps += 1;
+					let current = response[id][1][sent];
+					let coolSearchRegex = new RegExp(searchTerm, "gi")
+					let sentence = "<a>" + sanitiseText(twabIds[id][2].substring(current[0],current[1]), coolSearchRegex, searchTerm) + "</a>";
+					htmlText += sentence;
+
+				}
 			}
-
-			console.log(items[x][1])
-			if (items[x][1] < first[1]) {
-				first[0] = id;
-				first[1] = items[x][1];
-			}
-
-			if (items[x][1] > recent[1]) {
-				recent[0] = id;
-				recent[1] = items[x][1];
-			}
-
-			htmlText += "<h1><strong>{amount} in <a href=\"https://www.bungie.net/en/Explore/Detail/News/{twabId}\"> {twabName}</a></strong></h1>".replace("{twabName}",twabName).replace("{twabId}",id).replace("{amount}", response[id][0]);
-			for (let sent in response[id][1]) {
-				totalApps += 1;
-				let current = response[id][1][sent];
-				let coolSearchRegex = new RegExp(searchTerm, "gi")
-				let sentence = "<a>" + sanitiseText(twabIds[id][2].substring(current[0],current[1]), coolSearchRegex, searchTerm) + "</a>";
-				htmlText += sentence;
-
-			}
+			let cooltext = "<div> <h1>Searched: " + searchTerm +"</h1> <p>" + totalApps + " appearances, " + uniqueApps + " unique appearances out of " + numberTwabs + "</p>" +
+				"<p><a href=\"https://www.bungie.net/en/Explore/Detail/News/{mostId}\">".replace("{mostId}", most[0]) + " " + twabIds[most[0]][0] + "</a> has " + most[1] + " appearances</p>" +
+				"<p>First occurred: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + first[0] + "\">" + twabIds[first[0]][0] + "</a><br> " +
+				" Most recently appeared: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + recent[0] +"\">" + twabIds[recent[0]][0] + "<a></p></div>"
+			console.log(cooltext)
+			htmlText += cooltext;
+		} else {
+			htmlText = "Could not find queried search"
 		}
 
+
 	});
-	let cooltext = "<div> <h1>Searched: " + searchTerm +"</h1> <p>" + totalApps + " appearances, " + uniqueApps + " unique appearances out of " + numberTwabs + "</p>" +
-	"<p><a href=\"https://www.bungie.net/en/Explore/Detail/News/{mostId}\">".replace("{mostId}", most[0]) + " " + twabIds[most[0]][0] + "</a> has " + most[1] + " appearances</p>" +
-	"<p>First occurred: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + first[0] + "\">" + twabIds[first[0]][0] + "</a><br> " +
-	" Most recently appeared: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + recent[0] +"\">" + twabIds[recent[0]][0] + "<a></p></div>"
-	console.log(cooltext)
-	htmlText += cooltext;
 	document.getElementById('searched').innerHTML = htmlText
 	return false;
 }
