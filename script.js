@@ -55,7 +55,6 @@ async function formSubmit(event) {
 					most[1] = response[id][0];
 				}
 
-				console.log(items[x][1])
 				if (items[x][1] < first[1]) {
 					first[0] = id;
 					first[1] = items[x][1];
@@ -80,7 +79,6 @@ async function formSubmit(event) {
 				"<p><a href=\"https://www.bungie.net/en/Explore/Detail/News/{mostId}\">".replace("{mostId}", most[0]) + " " + twabIds[most[0]][0] + "</a> has " + most[1] + " appearances</p>" +
 				"<p>First occurred: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + first[0] + "\">" + twabIds[first[0]][0] + "</a><br> " +
 				" Most recently appeared: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + recent[0] +"\">" + twabIds[recent[0]][0] + "<a></p></div>"
-			console.log(cooltext)
 			htmlText += cooltext;
 		} else {
 			htmlText = "Could not find queried search"
@@ -157,7 +155,6 @@ function sanitiseText(text, regex, searchTerm) {
 	let exitUl = new RegExp("</ul>", "gi")
 	let replacement = "<b>" + searchTerm.toUpperCase() +"</b>";
 	let newText = text.replace(/\xa0/, "").replace(/\n/gi,"").replace(/<div>/gi,"").replace(exitDiv,"").replace(exitP,"").replace(exitUl,"").replace(/<p>/gi,"").replace(/<ul>/gi,"").replace(regex, replacement)
-	console.log(newText);
 	return newText;
 }
 
