@@ -6,8 +6,10 @@
 
 
 twabIds = {};
+apiKey = "";
 
 async function onLoadEvent() {
+	apiKey =
 	await twabFinder().then(function(response) {
 		twabIds = response;
 	})
@@ -95,7 +97,7 @@ async function formSubmit(event) {
 /* General Use functions */
 	/* Used for all api requests so no repeated code is used */
 function apiRequest(url) {
-	let apiKey = "f964b21004ec4b688c3bfd113638b260";
+
 	let request = new XMLHttpRequest();
 
 	request.open("GET", url, true);
@@ -112,6 +114,23 @@ function apiRequest(url) {
 		request.send();
 	});
 }
+
+async function netlifyKey() {
+	apiKey = "";
+	let request = new XMLHttpRequest();
+	request.open("GET", "https://destiny2twabs.netlify.app/.netlify/functions/keys")
+	return new Promise(function(response) {
+		request.onreadystatechange = function () {
+			if (this.readyState === 4 && this.status === 200) {
+				let json = JSON.parse(this.responseText);
+				apiKey = this.responseText;
+			}
+		}
+		request.send()
+	});
+	return apiKey;
+}
+
 
 function removeElement(className) {
 	const elements = document.getElementsByClassName(className);
