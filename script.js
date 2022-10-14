@@ -28,7 +28,7 @@ async function onLoadEvent() {
 async function formSubmit(event) {
 	htmlText = "";
 	event.preventDefault();
-	let searchTerm = document.getElementById("searchTerm").value;
+	let searchTerm = document.getElementById("searchTerm").value.toLowerCase();
 	await searchFunction(twabIds, searchTerm).then(function (response) {
 		if (Object.keys(response).length > 0){
 			totalApps = 0;
