@@ -145,17 +145,13 @@ function timeConv(timeStr) {
 	let year = parseInt(bTime.substring(0,4))*365*24;
 	let month = parseInt(bTime.substring(5,7))*30*24;
 	let day = parseInt(bTime.substring(8,10))*24;
-	let unix = year+month+day;
-	return unix;
+	return year+month+day;
 }
 
 	/* Clears text of characters that will ruin formatting when used in html */
 function sanitiseText(text, regex, searchTerm) {
-	let exitDiv = new RegExp("</div>", "gi")
-	let exitP = new RegExp("</p>", "gi")
-	let exitUl = new RegExp("</ul>", "gi")
 	let replacement = "<b>" + searchTerm.toUpperCase() +"</b>";
-	let newText = text.replace(/\xa0/, "").replace(/\n/gi,"").replace(/<div>/gi,"").replace(exitDiv,"").replace(exitP,"").replace(exitUl,"").replace(/<p>/gi,"").replace(/<ul>/gi,"").replace(regex, replacement)
+	let newText = text.replace(/<.*?>/g,"").replace(/\xa0/, "").replace(/\n/gi,"").replace(regex, replacement);
 	return newText;
 }
 
@@ -244,14 +240,32 @@ async function indivTwabSearch(twab, id, searchTerm) {
 			let result;
 			while ( (result=regex.exec(twab[id][2])) ) {
 				let sentence = getSentence(twab[id][2], result.index);
+				if ((sentence))
 				sentences.push(sentence);
 				count += 1;
 			}
 		} else {
 			return false;
 		}
-		let info = {};
-		return [count, sentences];
+		let info = [];
+		if (sentences.length >= 2) {
+			for (let pair in sentences) {
+				let allow = true;
+				if (info.length >= 1) {
+					for (let entr in info) {
+						if (info[entr][0] === sentences[pair][0] && info[entr][1] === sentences[pair][1]) {
+							allow = false;
+						}
+					}
+				}
+				if (allow === true) {
+					info.push(sentences[pair]);
+				}
+			}
+		} else {
+			info = sentences;
+		}
+		return [count, info];
 	} catch (err) {
 		return false;
 	}
