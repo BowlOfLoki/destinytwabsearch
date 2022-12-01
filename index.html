@@ -4,13 +4,14 @@
         visibility: hidden;
     }
 </style>
-<script>
-    onLoadEvent()
-</script>
+
 <h1> ABowlOfLoki's FABULOUS Twab and hotfix search tool</h1>
 
 <div id="main">
-    <p class="loader"> loading </p>
+    <p class="Loader" id="Loader"> loading </p>
+	<script>
+		onLoadEvent()
+	</script>
     <form method="POST" id="searchform" visiblity="invisible" class="searchForm">
         <input name="search" id="searchTerm"\>
         <button> Search </button>

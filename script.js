@@ -8,9 +8,11 @@
 twabIds = {};
 
 async function onLoadEvent() {
+	document.getElementById("Loader").innerHTML = "Getting List Of all Twabs";
 	await twabFinder().then(function(response) {
 		twabIds = response;
 	})
+	document.getElementById("Loader").innerHTML = "Getting Contents Of All Twabs";
 	await htmlOuter(twabIds).then(function(twabs) {
 		twabIds = twabs;
 	})
@@ -19,7 +21,7 @@ async function onLoadEvent() {
 		elements[i].style.visibility = "visible";
 	}
 
-	removeElement("loader")
+	removeElement("Loader")
 
 	let form = document.getElementById("searchform");
 	form.addEventListener('submit', formSubmit)
@@ -172,9 +174,9 @@ async function twabFinder(){
 				for (let i in resultList) {
 					let id = resultList[i].identifier
 					if (id in entries) {
-					} else if (!(resultList[i].displayName.toLowerCase().includes("this week at bungie")) &&  resultList[i].displayName.toLowerCase().includes("destiny 2") && contType[type] === "Updates") {
+					} else if (!(resultList[i].displayName.toLowerCase().includes("week at bungie")) &&  resultList[i].displayName.toLowerCase().includes("destiny 2") && contType[type] === "Updates") {
 						entries[id] = [resultList[i].displayName, resultList[i].creationDate];
-					} else if (resultList[i].displayName.toLowerCase().includes("this week at bungie") && contType[type] === "News") {
+					} else if (resultList[i].displayName.toLowerCase().includes("week at bungie") && contType[type] === "News") {
 						entries[id] = [resultList[i].displayName, resultList[i].creationDate.substring(0,10)];
 					}
 					if (response.Response.hasMore === false) {
