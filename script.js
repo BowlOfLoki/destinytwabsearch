@@ -7,14 +7,13 @@
 
 twabIds = {};
 
+
+
 async function onLoadEvent() {
-	document.getElementById("Loader").innerHTML = "Getting List Of all Twabs";
+	
+	document.getElementById("Loader").innerHTML = "Getting All Twabs";
 	await twabFinder().then(function(response) {
 		twabIds = response;
-	})
-	document.getElementById("Loader").innerHTML = "Getting Contents Of All Twabs";
-	await htmlOuter(twabIds).then(function(twabs) {
-		twabIds = twabs;
 	})
 	let elements = document.querySelectorAll(".searchForm");
 	for (let i=0; i<elements.length; i++){
@@ -22,15 +21,28 @@ async function onLoadEvent() {
 	}
 
 	removeElement("Loader")
-
+	
 	let form = document.getElementById("searchform");
 	form.addEventListener('submit', formSubmit)
+	await hashDealing();	
+}
+
+function hashDealing() {
+	if (window.location.hash) {
+		var hash = window.location.hash.substring(0);
+		document.getElementById("searchTerm").value = hash.substring(1, hash.length).replace("+", " ");
+		let button = document.getElementById("inputButton");
+		button.click();
+	}
+	
 }
 
 async function formSubmit(event) {
 	htmlText = "";
 	event.preventDefault();
 	let searchTerm = document.getElementById("searchTerm").value.toLowerCase();
+	console.log(searchTerm);
+	console.log(twabIds);
 	await searchFunction(twabIds, searchTerm).then(function (response) {
 		if (Object.keys(response).length > 0){
 			totalApps = 0;
@@ -50,7 +62,7 @@ async function formSubmit(event) {
 			for (let x in items) {
 				uniqueApps += 1;
 				let id = items[x][0];
-				let twabName = twabIds[id][0];
+				let twabName = twabIds[id]['title'];
 
 				if (response[id][0] > most[1]) {
 					most[0] = id;
@@ -67,20 +79,20 @@ async function formSubmit(event) {
 					recent[1] = items[x][1];
 				}
 
-				htmlText += "<h1><strong>{amount} in <a href=\"https://www.bungie.net/en/Explore/Detail/News/{twabId}\"> {twabName}</a></strong></h1>".replace("{twabName}",twabName).replace("{twabId}",id).replace("{amount}", response[id][0]);
+				htmlText += "<h1><strong>{amount} in <a href=\"{link}\"> {twabName}</a></strong></h1>".replace("{twabName}",twabName).replace("{twabId}",id).replace("{amount}", response[id][0]).replace("{link}", twabIds[id]['link']);
 				for (let sent in response[id][1]) {
 					totalApps += 1;
 					let current = response[id][1][sent];
 					let coolSearchRegex = new RegExp(searchTerm, "gi")
-					let sentence = "<a>" + sanitiseText(twabIds[id][2].substring(current[0],current[1]), coolSearchRegex, searchTerm) + "</a>";
+					let sentence = "<a>" + sanitiseText(twabIds[id]['html'].substring(current[0],current[1]), coolSearchRegex, searchTerm) + "</a>";
 					htmlText += sentence;
 
 				}
 			}
 			let cooltext = "<div> <h1>Searched: " + searchTerm +"</h1> <p>" + totalApps + " appearances, " + uniqueApps + " unique appearances out of " + numberTwabs + "</p>" +
-				"<p><a href=\"https://www.bungie.net/en/Explore/Detail/News/{mostId}\">".replace("{mostId}", most[0]) + " " + twabIds[most[0]][0] + "</a> has " + most[1] + " appearances</p>" +
-				"<p>First occurred: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + first[0] + "\">" + twabIds[first[0]][0] + "</a><br> " +
-				" Most recently appeared: <a href=\"https://www.bungie.net/en/Explore/Detail/News/" + recent[0] +"\">" + twabIds[recent[0]][0] + "<a></p></div>"
+				"<p><a href=\"{link}\">".replace("{link}", twabIds[most[0]]['link']) + " " + twabIds[most[0]]['title'] + "</a> has " + most[1] + " appearances</p>" +
+				"<p>First occurred: <a href=\"{link}\">".replace("{link}", twabIds[first[0]]['link']) + twabIds[first[0]]['title'] + "</a><br> " +
+				" Most recently appeared: <a href=\"{link}\">".replace("{link}", twabIds[recent[0]]['link']) + twabIds[recent[0]]['title'] + "<a></p></div>"
 			htmlText += cooltext;
 		} else {
 			htmlText = "Could not find queried search"
@@ -163,57 +175,30 @@ function sanitiseText(text, regex, searchTerm) {
 	/* twab finder - finds twab ids {id: [name, date]}*/
 async function twabFinder(){
 	entries = {};
-	contType = ["News", "Updates"];
-	for (let type in contType) {
-		let page = 0;
-		continueLoop = true;
-		while (true) {
-			let url = "https://www.bungie.net/Platform/Trending/Categories/{type}/{page}/".replace("{page}",page).replace("{type}",contType[type])
-			await apiRequest(url).then(function(response) {
-				let resultList = response.Response.results;
-				for (let i in resultList) {
-					let id = resultList[i].identifier
-					if (id in entries) {
-					} else if (!(resultList[i].displayName.toLowerCase().includes("week at bungie")) &&  resultList[i].displayName.toLowerCase().includes("destiny 2") && contType[type] === "Updates") {
-						entries[id] = [resultList[i].displayName, resultList[i].creationDate];
-					} else if (resultList[i].displayName.toLowerCase().includes("week at bungie") && contType[type] === "News") {
-						entries[id] = [resultList[i].displayName, resultList[i].creationDate.substring(0,10)];
-					}
-					if (response.Response.hasMore === false) {
-						continueLoop = false;
-					}
+	let page = 0;
+	continueLoop = true;
+	while (true) {
+		let url = "https://www.bungie.net/Platform/Content/Rss/NewsArticles/{page}/?includebody=true".replace("{page}",page);
+		await apiRequest(url).then(function(response) {
+			let resultList = response.Response.NewsArticles;
+			for (let i in resultList) {
+				let id = resultList[i].UniqueIdentifier;
+				if (id in entries) {
+					//pass
+				} else if (resultList[i].Title.toLowerCase().includes("destiny 2") || resultList[i].Title.toLowerCase().includes("week at bungie") || resultList[i].Title.toLowerCase().includes("hotfix") || resultList[i].Title.toLowerCase().includes("year ahead")) {
+					entries[id] = {"title":resultList[i].Title, "date":resultList[i].PubDate, "html":resultList[i].HtmlContent, "link":"https://www.bungie.net"+resultList[i].Link};
 				}
-			});
-			page += 1;
-			if (continueLoop === false) {
-				break;
 			}
+			if (response.Response.ResultCountThisPage < 25) {
+				continueLoop = false;
+			}
+		});
+		page += 1;
+		if (continueLoop === false) {
+			break;
 		}
 	}
 	return entries;
-}
-
-
-async function htmlScrape(id){
-	htmlObj = document.createElement('div');
-	let url = "https://www.bungie.net/Platform/Trending/Details/News/{id}".replace("{id}", id);
-	await apiRequest(url).then(function(response) {
-		let content = response.Response.news.article.properties.Content;
-		htmlObj.innerHTML = content;
-		removeElement("twitter-tweet");
-	})
-	return htmlObj.outerHTML;
-}
-
-async function htmlOuter(twabIds) {
-	number = 0;
-	for (let id in twabIds) {
-		htmlScrape(id).then(function(response) {
-			twabIds[id].push(response);
-			number += 1;
-		})
-	}
-	return twabIds;
 }
 
 
@@ -224,7 +209,7 @@ async function searchFunction(twabIds, searchTerm) {
 		twab[twabId] = twabIds[twabId];
 		indivTwabSearch(twab, twabId, searchTerm).then(function (response) {
 			if (!(response === false)) {
-				response.push(timeConv(twab[twabId][1]));
+				response.push(timeConv(twab[twabId]['date']));
 				usedTwabs[twabId] = response;
 			}
 		})
@@ -237,25 +222,27 @@ async function indivTwabSearch(twab, id, searchTerm) {
 	let count = 0;
 	let sentences = [];
 	try {
-		if (twab[id][2].toLowerCase().includes(searchTerm)) {
+		if (twab[id]['html'].toLowerCase().includes(searchTerm)) {
 			let regex = new RegExp(searchTerm,"gi")
 			let result;
-			while ( (result=regex.exec(twab[id][2])) ) {
-				let sentence = getSentence(twab[id][2], result.index);
-				if ((sentence))
-				sentences.push(sentence);
-				count += 1;
+			while ( (result=regex.exec(twab[id]['html'])) ) {
+				let sentence = getSentence(twab[id]['html'], result.index);
+				if ((sentence)) {
+					sentences.push(sentence);
+					count += 1;
+				}
 			}
 		} else {
 			return false;
 		}
+		console.log(sentences)
 		let info = [];
 		if (sentences.length >= 2) {
 			for (let pair in sentences) {
 				let allow = true;
 				if (info.length >= 1) {
 					for (let entr in info) {
-						if (info[entr][0] === sentences[pair][0] && info[entr][1] === sentences[pair][1]) {
+						if (info[entr][1] >= sentences[pair][0]) {
 							allow = false;
 						}
 					}
@@ -267,6 +254,7 @@ async function indivTwabSearch(twab, id, searchTerm) {
 		} else {
 			info = sentences;
 		}
+		console.log(count)
 		return [count, info];
 	} catch (err) {
 		return false;
