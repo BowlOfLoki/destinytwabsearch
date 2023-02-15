@@ -109,11 +109,8 @@ async function formSubmit(event) {
 /* General Use functions */
 	/* Used for all api requests so no repeated code is used */
 function apiRequest(url) {
-	let apiKey = "f964b21004ec4b688c3bfd113638b260";
 	let request = new XMLHttpRequest();
-
 	request.open("GET", url, true);
-	request.setRequestHeader("X-API-Key", apiKey);
 	return new Promise(function(resolve, reject) {
 		request.onreadystatechange = function() {
 			if (this.readyState === 4 && this.status === 200) {
@@ -175,29 +172,13 @@ function sanitiseText(text, regex, searchTerm) {
 	/* twab finder - finds twab ids {id: [name, date]}*/
 async function twabFinder(){
 	entries = {};
-	let page = 0;
-	continueLoop = true;
-	while (true) {
-		let url = "https://www.bungie.net/Platform/Content/Rss/NewsArticles/{page}/?includebody=true".replace("{page}",page);
-		await apiRequest(url).then(function(response) {
-			let resultList = response.Response.NewsArticles;
-			for (let i in resultList) {
-				let id = resultList[i].UniqueIdentifier;
-				if (id in entries) {
-					//pass
-				} else if (resultList[i].Title.toLowerCase().includes("destiny 2") || resultList[i].Title.toLowerCase().includes("week at bungie") || resultList[i].Title.toLowerCase().includes("hotfix") || resultList[i].Title.toLowerCase().includes("year ahead")) {
-					entries[id] = {"title":resultList[i].Title, "date":resultList[i].PubDate, "html":resultList[i].HtmlContent, "link":"https://www.bungie.net"+resultList[i].Link};
-				}
-			}
-			if (response.Response.ResultCountThisPage < 25) {
-				continueLoop = false;
-			}
-		});
-		page += 1;
-		if (continueLoop === false) {
-			break;
+	let url = "https://raw.githubusercontent.com/BowlOfLoki/lokisdestinydata/master/twabsDict.json";
+	await apiRequest(url).then(function(response) {
+		for (let i in response){
+			entries[i] = response[i];
 		}
-	}
+	});
+	console.log(entries)
 	return entries;
 }
 
@@ -209,7 +190,7 @@ async function searchFunction(twabIds, searchTerm) {
 		twab[twabId] = twabIds[twabId];
 		indivTwabSearch(twab, twabId, searchTerm).then(function (response) {
 			if (!(response === false)) {
-				response.push(timeConv(twab[twabId]['date']));
+				response.push(twab[twabId]['date']);
 				usedTwabs[twabId] = response;
 			}
 		})
