@@ -30,7 +30,7 @@ async function onLoadEvent() {
 function hashDealing() {
 	if (window.location.hash) {
 		var hash = window.location.hash.substring(0);
-		document.getElementById("searchTerm").value = hash.substring(1, hash.length).replace("+", " ");
+		document.getElementById("searchTerm").value = hash.substring(1, hash.length).replace(/\+/g, " ");
 		let button = document.getElementById("inputButton");
 		button.click();
 	}
