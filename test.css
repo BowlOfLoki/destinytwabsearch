@@ -1,0 +1,103 @@
+body {
+    background-color: #282828;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: -18;
+  width: 100%;
+  background-color: Grey;
+  color: white;
+  text-align: left;
+}
+
+.weaponNode {
+    background-color: dimgray;
+    height: 50px;
+    border:  1px solid white;
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.weaponNode:hover {
+    cursor: pointer;
+    background: gray;
+    border-radius: 2px;
+    height: 60px;
+}
+
+.clicked {
+    background-color: white;
+    height: 50px;
+    border:  1px solid black;
+    display: flex;
+    align-items: center;
+}
+
+.parentImage {
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+.weaponImage {
+    position: relative;
+    height: 100%;
+}
+
+.searchResults {
+    margin-top: 51px;
+}
+
+.searchContainer::-webkit-scrollbar {
+    display: none;
+}
+
+.weaponDisplay {
+    float: right;
+    position: relative;
+    inline-size: 75%;
+    margin: 10px;
+    color: white;
+    overflow: scroll;
+}
+
+.weaponDisplay::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    word-wrap: break-word;
+    display: flex;
+}
+
+.searchBar {
+    position: fixed;
+    z-index: 1;
+    background-color: dimgray;
+    display: flex;
+    height: 50px;
+    border:  1px solid white;
+    align-items: center;
+    width: 24.45%;
+    align-items: center;
+    justify-content: center;
+}
+
+.searchContainer {
+    float: left;
+    position: relative;
+    width: 25%;
+    height: 100%;
+    overflow: scroll;
+}
+
+.search {
+    height: 40px;
+    background: gainsboro;
+    border: none;
+    width: 75%;
+    cursor: text;
+}
