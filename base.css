@@ -1,0 +1,22 @@
+body {
+    background-color: #282828;
+    word-wrap: break-word;
+    display: flex;
+    margin-bottom: 50px;
+    user-select: none;
+}
+
+.footer {
+    z-index: 50;
+    position: fixed;
+    left: 0;
+    bottom: 0px;
+    width: 100%;
+    background-color: Grey;
+    color: white;
+    text-align: left;
+}
+
+.footerText {
+    margin-left: 10px;
+}
