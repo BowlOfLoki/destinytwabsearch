@@ -1,20 +1,17 @@
 var clicked = {};
-
+var destinyData = {};
+var meaning = ['weapon1text', 'weapon2text']
 
 async function onLoadEvent() {
-    let destinyData = {};
     let aggregateUrl = "https://www.bungie.net"
     await bungieGetAggregateUrl().then(function(response) {
         aggregateUrl += response.Response.jsonWorldContentPaths.en
     });
 
     await apiRequest(aggregateUrl).then(function(response) {
-        destinyData['DestinyInventoryItemDefinition'] = response.DestinyInventoryItemDefinition;
-        destinyData['DestinyPowerCapDefinition'] = response.DestinyPowerCapDefinition;
-        destinyData['DestinySandboxPerkDefinition'] = response.DestinySandboxPerkDefinition;
-        destinyData['DestinyStatDefinition'] = response.DestinyStatDefinition;
+        destinyData = response;
     });
-
+    console.log(destinyData);
 
     weapons = {}
     for (let i in destinyData.DestinyInventoryItemDefinition) {
@@ -27,7 +24,6 @@ async function onLoadEvent() {
             }       
         }
     }
-    destinyData['DestinyInventoryItemDefinition'] = weapons;
     
 
 
@@ -40,7 +36,7 @@ async function onLoadEvent() {
     const searchEl = document.createElement("input")
     const filter = document.createElement('img')
     filter.setAttribute('class', 'filterImg')
-    filter.src = 'FilterSettings.svg'
+    filter.src = 'resources/FilterSettings.svg'
     searchBar.appendChild(filter)
     searchEl.oninput = onSearchInput
     searchEl.setAttribute('class', 'search')
@@ -169,7 +165,6 @@ async function gunPress(event) {
 }
 
 function renderClicked() {
-    const meaning = ['weapon1text', 'weapon2text']
     try {
         document.getElementById('clickedWeapons').remove();
     } catch (err) {
@@ -218,7 +213,8 @@ function renderClicked() {
         text.setAttribute('class', 'weaponText')
         result.appendChild(text)
         clickedDiv.appendChild(result);
-        document.getElementById(meaning[idx-1]).innerHTML = JSON.stringify(weapons[i])
+        const targetEle = document.getElementById(meaning[idx-1])
+        weaponRender(weapons[i], targetEle)
     }
     const searchContainer = document.getElementById('searchContainer');
     searchContainer.appendChild(clickedDiv);
@@ -300,4 +296,98 @@ function resetEvent(event) {
     target.style.top = rect.top + rect.height * 0.5 - 7.5 + 'px';
     topBox.style.height = rect.top + rect.height * 0.5 + 7.5 + 'px'
     botBox.style.height = rect.top + rect.height * 0.5 - 7.5 + 'px'
+}
+
+function copy(event) {
+    navigator.clipboard.writeText(JSON.stringify(destinyData)).then(function () {
+        console.log('done')
+    }, function (err) {
+        console.error('error')
+    });
+}
+
+function weaponRender(weapon, targetEle) {
+    const stats = weapon['stats']['stats'];
+    for (let idx in stats) {
+        stats[idx]['displayInfo'] = destinyData['DestinyStatDefinition'][idx]['displayProperties']
+    };
+    console.log(weapon)
+    const displayProperties = weapon['displayProperties'];
+    const quality = weapon['quality'];
+    const investmentStats = weapon['investmentStats'];
+    const sockets = weapon['sockets'];
+    const perks = [];
+    for (let idx in sockets['socketEntries']) {
+        var plug = []
+        if (sockets['socketEntries'][idx]['randomizedPlugSetHash'] != undefined) {
+            plug = destinyData["DestinyPlugSetDefinition"][sockets['socketEntries'][idx]['randomizedPlugSetHash']];
+        } else if (sockets['socketEntries'][idx]['singleInitialItemHash'] != undefined) {
+            plug = destinyData["DestinyPlugSetDefinition"][sockets['socketEntries'][idx]['singleInitialItemHash']];
+        }
+        if (!(plug === undefined)) {
+            let perkList = [];
+            for (let entry in plug['reusablePlugItems']) {
+                perkList.push(destinyData['DestinyInventoryItemDefinition'][plug['reusablePlugItems'][entry]['plugItemHash']])
+            }
+            perks.push(perkList);
+        }
+
+    }
+
+    const image = "https://www.bungie.net" + weapon['screenshot'];
+
+
+    const weaponContainer = document.createElement('div');
+    weaponContainer.setAttribute('class', 'weaponContainer');
+    weaponContainer.setAttribute('id', 'weaponContainer');
+    targetEle.appendChild(weaponContainer)
+
+    const weaponImg = document.createElement('img');
+    weaponImg.setAttribute('class', 'weaponImg')
+    weaponImg.setAttribute('id', 'weaponImg')
+    weaponImg.src = image;
+    weaponContainer.appendChild(weaponImg);
+
+    const perkContainer = document.createElement('div')
+    perkContainer.setAttribute('class', 'perkContainer')
+    for (let i in perks) {
+        const firstPerks = document.createElement('div');
+        firstPerks.setAttribute('class', 'perkRow' + i + ' perkRow')
+        for (let pk in perks[i]) {
+            const perk = perks[i][pk]
+            const currPerk = document.createElement('img')
+            currPerk.onclick = perkClick;
+            currPerk.setAttribute('id', i + " " + pk.toString())
+            currPerk.setAttribute('class', 'weaponPerk')
+            currPerk.src = "https://www.bungie.net" + perk['displayProperties']['icon']
+            const hoverDiv = document.createElement('div')
+            hoverDiv.setAttribute('class', 'perkContent')
+            hoverDiv.innerHTML = perk['displayProperties']['name']
+            currPerk.appendChild(hoverDiv);
+            firstPerks.appendChild(currPerk);
+        }
+        perkContainer.appendChild(firstPerks)
+    }
+    weaponContainer.appendChild(perkContainer)
+
+}
+
+function perkClick(event) {
+    target = document.getElementById(event.target.id)
+    const removeClicked = target.parentNode.getElementsByClassName('clickedPerk')
+    if (target.className === 'weaponPerk') {
+        for (let i in Object.keys(removeClicked)) {
+            if (removeClicked.length > 0 && removeClicked[i].id.substring(0, 1) === target.id.substring(0, 1)) {
+                removeClicked[i].setAttribute('class', 'weaponPerk')
+            }
+        }
+        target.setAttribute('class', 'clickedPerk')
+    } else {
+        for (let i in removeClicked) {
+            if (removeClicked.length > 0 && removeClicked[i].id.substring(0, 1) === target.id.substring(0, 1)) {
+                removeClicked[i].setAttribute('class', 'weaponPerk')
+            }
+        }
+    }
+    
 }
