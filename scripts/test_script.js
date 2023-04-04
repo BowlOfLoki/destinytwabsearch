@@ -1,6 +1,7 @@
 var clicked = {};
 var destinyData = {};
 var meaning = ['weapon1text', 'weapon2text']
+var damageTypes = {}
 
 async function onLoadEvent() {
     let aggregateUrl = "https://www.bungie.net"
@@ -25,8 +26,6 @@ async function onLoadEvent() {
         }
     }
     
-
-
     const searchContainer = document.createElement('div')
     searchContainer.setAttribute('class', 'searchContainer')
     searchContainer.setAttribute('id', 'searchContainer')
@@ -110,6 +109,13 @@ function getSearchedWeapons(searchString) {
                 icon.setAttribute('class', 'iconImage')
                 imageDiv.appendChild(icon);
             }
+
+            const damageType = document.createElement('img');
+            damageType.setAttribute('class', 'typeImage');
+            damageType.src = "https://www.bungie.net" + destinyData['DestinyDamageTypeDefinition'][weapons[i]['defaultDamageTypeHash']]['displayProperties']['icon'];
+            
+            imageDiv.appendChild(damageType);
+
             result.appendChild(imageDiv)
 
             const clickable = document.createElement('div');
@@ -307,46 +313,115 @@ function copy(event) {
 }
 
 function weaponRender(weapon, targetEle) {
-    const stats = weapon['stats']['stats'];
+    console.log(weapon)
+    
+    let stats = weapon['stats']['stats'];
     for (let idx in stats) {
         stats[idx]['displayInfo'] = destinyData['DestinyStatDefinition'][idx]['displayProperties']
     };
-    console.log(weapon)
+    stats = weapon['stats']['stats'];
+    
+    
     const displayProperties = weapon['displayProperties'];
     const quality = weapon['quality'];
     const investmentStats = weapon['investmentStats'];
     const sockets = weapon['sockets'];
     const perks = [];
     for (let idx in sockets['socketEntries']) {
-        var plug = []
+        var plug = [];
+        let perkList = [];
         if (sockets['socketEntries'][idx]['randomizedPlugSetHash'] != undefined) {
             plug = destinyData["DestinyPlugSetDefinition"][sockets['socketEntries'][idx]['randomizedPlugSetHash']];
-        } else if (sockets['socketEntries'][idx]['singleInitialItemHash'] != undefined) {
-            plug = destinyData["DestinyPlugSetDefinition"][sockets['socketEntries'][idx]['singleInitialItemHash']];
-        }
-        if (!(plug === undefined)) {
-            let perkList = [];
             for (let entry in plug['reusablePlugItems']) {
-                perkList.push(destinyData['DestinyInventoryItemDefinition'][plug['reusablePlugItems'][entry]['plugItemHash']])
+                if (destinyData['DestinyInventoryItemDefinition'][plug['reusablePlugItems'][entry]['plugItemHash']]['itemTypeDisplayName'] != "Enhanced Trait") {
+                    perkList.push(destinyData['DestinyInventoryItemDefinition'][plug['reusablePlugItems'][entry]['plugItemHash']])
+                }
             }
             perks.push(perkList);
+        } else if (destinyData["DestinyInventoryItemDefinition"][sockets['socketEntries'][idx]['singleInitialItemHash']] != undefined) {
+            perkList.push(destinyData["DestinyInventoryItemDefinition"][sockets['socketEntries'][idx]['singleInitialItemHash']]);
+            console.log(destinyData["DestinyInventoryItemDefinition"][sockets['socketEntries'][idx]['singleInitialItemHash']])
+            perks.push(perkList);
         }
-
     }
+    console.log(perks)
 
-    const image = "https://www.bungie.net" + weapon['screenshot'];
-
+    /*
+    var plug = []
+        if (sockets['socketEntries'][idx]['randomizedPlugSetHash'] != undefined) {
+            plug = destinyData["DestinyPlugSetDefinition"][sockets['socketEntries'][idx]['randomizedPlugSetHash']];
+            if (plug != undefined) {
+                let perkList = [];
+                for (let entry in plug['reusablePlugItems']) {
+                    if (destinyData['DestinyInventoryItemDefinition'][plug['reusablePlugItems'][entry]['plugItemHash']]['itemTypeDisplayName'] != "Enhanced Trait") {
+                        perkList.push(destinyData['DestinyInventoryItemDefinition'][plug['reusablePlugItems'][entry]['plugItemHash']])
+                    }    
+                }
+                perks.push(perkList);
+            }
+        } else {
+            let perkList = []
+            perk = destinyData["DestinyInventoryItemDefinition"][sockets['socketEntries'][idx]['singleInitialItemHash']];
+            perkList.push(perk)
+            console.log(perkList)
+            perks.push(perkList)
+        }
+    */
 
     const weaponContainer = document.createElement('div');
     weaponContainer.setAttribute('class', 'weaponContainer');
     weaponContainer.setAttribute('id', 'weaponContainer');
     targetEle.appendChild(weaponContainer)
 
+    const image = "https://www.bungie.net" + weapon['screenshot'];
     const weaponImg = document.createElement('img');
     weaponImg.setAttribute('class', 'weaponImg')
     weaponImg.setAttribute('id', 'weaponImg')
     weaponImg.src = image;
     weaponContainer.appendChild(weaponImg);
+
+    const recoil = stats[2715839340];
+    if (recoil != undefined) {
+        const radius = 15;
+        const svgEl = document.createElement('svg');
+        svgEl.setAttribute("height", radius);
+        svgEl.setAttribute("width", radius * 2);
+        svgEl.setAttribute('class', 'recoilSvgContainer');
+        const svgMask = document.createElement('mask');
+        svgMask.id = 'circleMask';
+        const circleMsk = document.createElement('circle');
+        circleMsk.setAttribute("cx", radius);
+        circleMsk.setAttribute("cy", radius);
+        circleMsk.setAttribute("r", radius);
+        circleMsk.setAttribute("fill", "white");
+        svgMask.appendChild(circleMsk);
+        svgEl.appendChild(svgMask);
+
+        const outerCirc = document.createElement('circle');
+        outerCirc.setAttribute("cx", radius);
+        outerCirc.setAttribute("cy", radius);
+        outerCirc.setAttribute("r", radius);
+        outerCirc.setAttribute("fill", "black");
+        svgEl.appendChild(outerCirc);
+
+        const innerCirc = document.createElement('circle');
+        innerCirc.setAttribute("cx", radius);
+        innerCirc.setAttribute("cy", radius);
+        innerCirc.setAttribute("r", radius / 10);
+        innerCirc.setAttribute("fill", "white");
+        svgEl.appendChild(innerCirc);
+
+        const pathEl = document.createElement('path');
+        pathEl.setAttribute("d", recoilDirectionCalc(stats[2715839340]['value'], radius));
+        pathEl.setAttribute("fill", "white");
+        pathEl.setAttribute("mask", "url(#circleMask)");
+        svgEl.appendChild(pathEl);
+
+        weaponContainer.appendChild(svgEl)
+    }
+
+
+
 
     const perkContainer = document.createElement('div')
     perkContainer.setAttribute('class', 'perkContainer')
@@ -360,16 +435,19 @@ function weaponRender(weapon, targetEle) {
             currPerk.setAttribute('id', i + " " + pk.toString())
             currPerk.setAttribute('class', 'weaponPerk')
             currPerk.src = "https://www.bungie.net" + perk['displayProperties']['icon']
-            const hoverDiv = document.createElement('div')
-            hoverDiv.setAttribute('class', 'perkContent')
-            hoverDiv.innerHTML = perk['displayProperties']['name']
-            currPerk.appendChild(hoverDiv);
+            const hoverSpan = document.createElement('span')
+            hoverSpan.setAttribute('class', 'perkContent')
+            hoverSpan.innerHTML = perk['displayProperties']['name']
+            currPerk.appendChild(hoverSpan);
             firstPerks.appendChild(currPerk);
         }
         perkContainer.appendChild(firstPerks)
     }
     weaponContainer.appendChild(perkContainer)
 
+
+    
+    
 }
 
 function perkClick(event) {
@@ -390,4 +468,23 @@ function perkClick(event) {
         }
     }
     
+}
+
+function recoilDirectionCalc(stat, radius) {
+    const angle = ((Math.sin(stat + 5) * (2 * Math.PI) / 20)
+        * (100 - stat))
+        * 0.8
+        * (Math.PI / 180);
+
+    const spread = ((100 - stat) / 100) * (90) * (Math.PI / 180) * Math.sign(angle)
+
+    const xUp = radius - Math.sin(angle + spread) * radius
+    const yUp = radius - Math.cos(angle + spread) * radius
+    const xDown = radius - Math.sin(angle - spread) * radius
+    const yDown = radius - Math.cos(angle - spread) * radius
+
+    const xOut = (xUp + xDown)/2
+    const yOut = -100
+
+    return "M" + radius + " " + radius + " L" + xUp + " " + yUp + " L" + xOut + " " + yOut + " L" + xDown + " " + yDown + " Z";
 }

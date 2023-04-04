@@ -18,5 +18,26 @@ body {
 }
 
 .footerText {
+    display: inline-block;
     margin-left: 10px;
+    margin-right: 40px;
+}
+
+.footerText:hover .visitable {
+    cursor: pointer;
+    color: #33b3d6;
+}
+
+.footerText:hover .visitable:hover {
+    color: #8f1d6e;
+}
+
+a:link {
+    color: white;
+    text-decoration: none;
+}
+
+a:visited {
+    color: white;
+    text-decoration: none;  
 }

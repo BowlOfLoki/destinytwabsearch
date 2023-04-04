@@ -956,11 +956,59 @@ async function onLoadEvent() {
     weaponContainer.setAttribute('id', 'weaponContainer');
     document.getElementById('outer').appendChild(weaponContainer)
 
+    const renderedWeaponContainer = document.createElement('div');
+    renderedWeaponContainer.setAttribute('class', 'img-overlay-wrap');
+
+
     const weaponImg = document.createElement('img');
     weaponImg.setAttribute('class', 'weaponImg')
     weaponImg.setAttribute('id', 'weaponImg')
     weaponImg.src = image;
-    weaponContainer.appendChild(weaponImg);
+    renderedWeaponContainer.appendChild(weaponImg);
+
+
+    const recoil = stats[2715839340];
+    if (recoil != undefined) {
+        const radius = 15;
+        const svgEl = document.createElement('svg');
+        svgEl.setAttribute("height", radius);
+        svgEl.setAttribute("width", radius * 2);
+
+        const svgMask = document.createElement('mask');
+        svgMask.id = 'circleMask';
+        const circleMsk = document.createElement('circle');
+        circleMsk.setAttribute("c", radius);
+        circleMsk.setAttribute("cy", radius);
+        circleMsk.setAttribute("r", radius);
+        circleMsk.setAttribute("fill", "white");
+        svgMask.appendChild(circleMsk);
+        svgEl.appendChild(svgMask);
+
+        const outerCirc = document.createElement('circle');
+        outerCirc.setAttribute("cx", radius);
+        outerCirc.setAttribute("cy", radius);
+        outerCirc.setAttribute("r", radius);
+        outerCirc.setAttribute("fill", "black");
+        svgEl.appendChild(outerCirc);
+
+        const innerCirc = document.createElement('circle');
+        innerCirc.setAttribute("cx", radius);
+        innerCirc.setAttribute("cy", radius);
+        innerCirc.setAttribute("r", radius / 10);
+        innerCirc.setAttribute("fill", "white");
+        svgEl.appendChild(innerCirc);
+
+        const pathEl = document.createElement('path');
+        pathEl.setAttribute("d", recoilDirectionCalc(stats[2715839340]['value'], radius));
+        pathEl.setAttribute("fill", "white");
+        pathEl.setAttribute("mask", "url(#circleMask)");
+        svgEl.appendChild(pathEl);
+
+        renderedWeaponContainer.appendChild(svgEl)
+    }
+
+    weaponContainer.appendChild(renderedWeaponContainer);
+
 
     const perkContainer = document.createElement('div')
     perkContainer.setAttribute('class', 'perkContainer')
@@ -979,6 +1027,8 @@ async function onLoadEvent() {
     }
     weaponContainer.appendChild(perkContainer)
 
+
+ 
 }
 
 function apiRequest(url) {
@@ -1017,4 +1067,23 @@ function bungieGetAggregateUrl() {
     });
 
 }
- 
+
+
+function recoilDirectionCalc(stat, radius) {
+    const angle = ((Math.sin(stat + 5) * (2 * Math.PI) / 20)
+        * (100 - stat))
+        * 0.8
+        * (Math.PI / 180);
+
+    const spread = ((100 - stat) / 100) * (90) * (Math.PI / 180) * Math.sign(angle)
+
+    const xUp = radius - Math.sin(angle + spread) * radius
+    const yUp = radius - Math.cos(angle + spread) * radius
+    const xDown = radius - Math.sin(angle - spread) * radius
+    const yDown = radius - Math.cos(angle - spread) * radius
+
+    const xOut = (xUp + xDown) / 2
+    const yOut = -100
+
+    return "M" + radius + " " + radius + " L" + xUp + " " + yUp + " L" + xOut + " " + yOut + " L" + xDown + " " + yDown + " Z";
+}

@@ -17,6 +17,14 @@
         height: 65px;
     }
 
+.weaponNode:hover .parentImage {
+    width: 65px;
+}
+
+.weaponNode:hover .typeImage {
+    right: 5px;
+}
+
 .weaponNode:hover {
     cursor: pointer;
     background: gray;
@@ -58,6 +66,7 @@
     left: 0;
     float: right;
     height: 100%;
+    width: 50px;
 }
 
 .weaponImage {
@@ -69,6 +78,13 @@
     position: absolute;
     top: 0px;
     height: 80%;
+}
+
+.typeImage {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    height: 40%;
 }
 
 .searchResults {
@@ -251,3 +267,23 @@
 .weaponPerk:hover + .perkContent {
     opacity: 1;
 }
+
+.recoilSvgContainer {
+    position: absolute;
+    width: 30px;
+    height: 15px;
+    z-index: 50;
+}
+
+circle {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+path {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
