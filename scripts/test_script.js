@@ -430,16 +430,26 @@ function weaponRender(weapon, targetEle) {
         firstPerks.setAttribute('class', 'perkRow' + i + ' perkRow')
         for (let pk in perks[i]) {
             const perk = perks[i][pk]
+            const perkDiv = document.createElement('div')
+            
+            perkDiv.setAttribute('class', 'imgDiv')
+            perkDiv.onclick = perkClick;
+            
+            
             const currPerk = document.createElement('img')
-            currPerk.onclick = perkClick;
+            currPerk.src = "https://www.bungie.net" + perk['displayProperties']['icon']
             currPerk.setAttribute('id', i + " " + pk.toString())
             currPerk.setAttribute('class', 'weaponPerk')
-            currPerk.src = "https://www.bungie.net" + perk['displayProperties']['icon']
+            perkDiv.appendChild(currPerk)
+
             const hoverSpan = document.createElement('span')
             hoverSpan.setAttribute('class', 'perkContent')
             hoverSpan.innerHTML = perk['displayProperties']['name']
-            currPerk.appendChild(hoverSpan);
-            firstPerks.appendChild(currPerk);
+            perkDiv.appendChild(hoverSpan);
+
+            
+
+            firstPerks.appendChild(perkDiv);
         }
         perkContainer.appendChild(firstPerks)
     }
@@ -452,7 +462,17 @@ function weaponRender(weapon, targetEle) {
 
 function perkClick(event) {
     target = document.getElementById(event.target.id)
-    const removeClicked = target.parentNode.getElementsByClassName('clickedPerk')
+    console.log(event.target.id)
+    let removeClicked = undefined
+    console.log(target.parentNode)
+    if (target.parentNode.parentNode === undefined) {
+        console.log('asdasd')
+        removeClicked = target.parentNode.getElementsByClassName('clickedPerk')
+    } else {
+        removeClicked = target.parentNode.getElementsByClassName('clickedPerk')
+        console.log(123123)
+    }
+    
     if (target.className === 'weaponPerk') {
         for (let i in Object.keys(removeClicked)) {
             if (removeClicked.length > 0 && removeClicked[i].id.substring(0, 1) === target.id.substring(0, 1)) {
