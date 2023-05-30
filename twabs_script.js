@@ -79,7 +79,7 @@ async function formSubmit(event) {
 					recent[1] = items[x][1];
 				}
 
-				htmlText += "<h1><strong>{amount} in <a href=\"{link}\"> {twabName}</a></strong></h1>".replace("{twabName}",twabName).replace("{twabId}",id).replace("{amount}", response[id][0]).replace("{link}", twabIds[id]['link']);
+				htmlText += "<h1><strong>{amount} in <a href=\"{link}\"> {twabName}</a></strong></h1>".replace("{twabName}", twabName).replace("{twabId}", id).replace("{amount}", response[id][0]).replace("{link}", "https://www.bungie.net" + twabIds[id]['link']);
 				for (let sent in response[id][1]) {
 					totalApps += 1;
 					let current = response[id][1][sent];
@@ -90,9 +90,9 @@ async function formSubmit(event) {
 				}
 			}
 			let cooltext = "<div> <h1>Searched: " + searchTerm +"</h1> <p>" + totalApps + " appearances, " + uniqueApps + " unique appearances out of " + numberTwabs + "</p>" +
-				"<p><a href=\"{link}\">".replace("{link}", twabIds[most[0]]['link']) + " " + twabIds[most[0]]['title'] + "</a> has " + most[1] + " appearances</p>" +
-				"<p>First occurred: <a href=\"{link}\">".replace("{link}", twabIds[first[0]]['link']) + twabIds[first[0]]['title'] + "</a><br> " +
-				" Most recently appeared: <a href=\"{link}\">".replace("{link}", twabIds[recent[0]]['link']) + twabIds[recent[0]]['title'] + "<a></p></div>"
+				"<p><a href=\"{link}\">".replace("{link}", "https://www.bungie.net" + twabIds[most[0]]['link']) + " " + twabIds[most[0]]['title'] + "</a> has " + most[1] + " appearances</p>" +
+				"<p>First occurred: <a href=\"{link}\">".replace("{link}", "https://www.bungie.net" + twabIds[first[0]]['link']) + twabIds[first[0]]['title'] + "</a><br> " +
+				" Most recently appeared: <a href=\"{link}\">".replace("{link}", "https://www.bungie.net" + twabIds[recent[0]]['link']) + twabIds[recent[0]]['title'] + "<a></p></div>"
 			htmlText += cooltext;
 		} else {
 			htmlText = "Could not find queried search"
