@@ -24,7 +24,7 @@ async function onLoadEvent() {
 	
 	let form = document.getElementById("searchform");
 	form.addEventListener('submit', formSubmit)
-	await hashDealing();	
+	hashDealing();	
 }
 
 function hashDealing() {
@@ -151,13 +151,6 @@ function getSentence(twab, location) {
 	return [start, end+location]
 }
 
-function timeConv(timeStr) {
-	let bTime = timeStr.substring(0,10);
-	let year = parseInt(bTime.substring(0,4))*365*24;
-	let month = parseInt(bTime.substring(5,7))*30*24;
-	let day = parseInt(bTime.substring(8,10))*24;
-	return year+month+day;
-}
 
 	/* Clears text of characters that will ruin formatting when used in html */
 function sanitiseText(text, regex, searchTerm) {
@@ -165,7 +158,6 @@ function sanitiseText(text, regex, searchTerm) {
 	let newText = text.replace(/<.*?>/g,"").replace(/\xa0/, "").replace(/\n/gi,"").replace(regex, replacement);
 	return newText;
 }
-
 
 
 /* Main Functions */
